@@ -1,46 +1,46 @@
 import requests
 import os
-import time
-import datetime as dt
-   
-def send_msg(text):
-   token = "1209017671:AAH8evw44Tlf-eTtIXGwiOCklqiNOa0r3XA"
-   chat_id = "-444235704"
+import sqlite3
+import datetime
+
+
+home_dir = '/home/kostya/home_termometer'
+log_file = f'{home_dir}/temperature.log'
+db_file = f'{home_dir}/temperature.db'
+token = "1209017671:AAH8evw44Tlf-eTtIXGwiOCklqiNOa0r3XA"
+chat_id = "-444235704"
+
+def send_msg(text):   
    url_req = "https://api.telegram.org/bot" + token + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + text 
    results = requests.get(url_req)
-   print(results.json())
+   #print(results.json())
 
-#send_msg("Hello there!")
+def main():
+    con = sqlite3.connect(db_file)
+    cur = con.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS temperature(timestamp real, t real)")
+        
+    with open(log_file) as f:
+        t = f.readline()
+    ts = os.path.getctime(log_file)    
 
+    cur.execute("INSERT INTO temperature (timestamp, t ) VALUES (?, ?)", [ts, t])
+    con.commit()
+
+    cur.execute("SELECT t FROM temperature where timestamp < ? and timestamp > ? limit 1", [ts - 60*60, ts - 120*60])
+    results = cur.fetchall()
+    if len(results) > 0:
+        old_t = float(results[0][0])
+        d = abs(float(t) - old_t)
+        if d > 2:
+            send_msg(f"Внимание, температура значительно изменилась, delta = {round(d, 2)}")
+
+    if float(t) < 5:
+        send_msg(f'Критически низкая температура: {t}°C')
+    else:
+        m = int(datetime.datetime.now().strftime('%M'))
+        if m > 28 and m < 32:
+            send_msg(f'Температура ОК: {float(t)}°C')
     
-import sqlite3
-time.sleep(2)
-
-con = sqlite3.connect("/home/kostya/home_termometer/temperature.db")
-cur = con.cursor()
-cur.execute("CREATE TABLE IF NOT EXISTS temperature(timestamp real, t real)")
-
-log_file = '/home/kostya/home_termometer/temperature.log'
-
-
-    
-with open(log_file) as f:
-        for line in f:
-            pass
-t = line
-ts = os.path.getctime(log_file)
-print('t=', t, 'ts=',ts)
-
-cur.execute("INSERT INTO temperature (timestamp, t ) VALUES (?, ?)", [ts, t])
-con.commit()
-
-res = cur.execute("SELECT t FROM temperature where timestamp < ? and timestamp > ? limit 1", [ts - 60*60, ts - 120*60])
-if res.fetchone():
-    old_t = res.fetchone()[0]
-    if t - old_t < -3:
-        print('Сообщение о существенном падении температуры')
-
-if float(t) < 5:
-    print('Сообщение о низкой температуре')
-
-
+if __name__ == '__main__':
+    main()
