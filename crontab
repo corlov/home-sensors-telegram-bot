@@ -24,5 +24,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 * * * * * root /home/kostya/home_termometer/update_temp.sh
 * * * * * root /home/kostya/home_termometer/sensor_service.sh
 */6 * * * * root /home/kostya/home_termometer/sensor_alarm.sh
+* * * * * root /home/kostya/home_termometer/cctv/cctv_monitoring.sh
+
+
 
 

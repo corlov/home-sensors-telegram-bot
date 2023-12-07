@@ -3,11 +3,11 @@ import telebot
 import datetime as dt
 import sqlite3
 
-bot = telebot.TeleBot('1209017671:AAH8evw44Tlf-eTtIXGwiOCklqiNOa0r3XA')
-
 home_dir = '/home/kostya/home_termometer'
 db_file = f'{home_dir}/temperature.db'
-log_file = f'{home_dir}/temperature.log'
+
+bot = telebot.TeleBot('1209017671:AAH8evw44Tlf-eTtIXGwiOCklqiNOa0r3XA')
+log_file = '/home/kostya/home_termometer/temperature.log'
 
 def read_data():
     with open(log_file) as f:
