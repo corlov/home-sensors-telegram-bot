@@ -30,3 +30,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 * * * * * root /home/kostya/home_termometer/cctv/cctv_monitoring.sh 4
 * * * * * root /home/kostya/home_termometer/cctv/cctv_monitoring.sh 5
 * * * * * root /home/kostya/home_termometer/cctv/cctv_monitoring.sh 6
+
+
+
+50 10,21 * * * root /usr/sbin/reboot
+0 8,16,22 * * * root /home/kostya/home_termometer/energy_service.sh
+
+

@@ -5,15 +5,22 @@ import sqlite3
 
 home_dir = '/home/kostya/home_termometer'
 db_file = f'{home_dir}/temperature.db'
+log_file_name = '/home/kostya/home_termometer/history.log'
 
 bot = telebot.TeleBot('1209017671:AAH8evw44Tlf-eTtIXGwiOCklqiNOa0r3XA')
 log_file = '/home/kostya/home_termometer/temperature.log'
 
-def read_data():
-    with open(log_file) as f:
+def logmsg(text):
+    t = dt.datetime.today().strftime("%d.%m.%Y %H:%M")
+    with open(log_file_name, 'a') as w:
+        w.write(f'[{t}] - {text}\n')
+    
+
+def read_data():    
+    with open(log_file, encoding="utf-8", errors="ignore") as f:
         for line in f:
             pass
-    last_line = line
+            last_line = line
     t = dt.datetime.fromtimestamp(os.path.getctime(log_file))
     return t.strftime("%d.%m.%Y %H:%M") + ', ' + last_line[:-1] + "°C"
 
@@ -86,6 +93,7 @@ def send_camera_snashot(message):
 # curre4nt temperature
 @bot.message_handler(commands=['t', 'T', 'т'])
 def get_temperature(message):
+    logmsg('get_temperature')
     bot.reply_to(message, read_data())
 
 
@@ -98,14 +106,16 @@ def get_temperatur_statistics(message):
     for row in cur.execute("""
             select 
                 avg(t) as t,
-                strftime('%H', DATETIME(ROUND(timestamp), 'unixepoch')) as h
+                strftime('%d.%m %H', DATETIME(ROUND(timestamp), 'unixepoch')) as h
             from temperature
             where
                 strftime('%s', 'now') - timestamp < 60*60*24
             group by
-            strftime('%H', DATETIME(ROUND(timestamp), 'unixepoch'));
+            strftime('%d.%m %H', DATETIME(ROUND(timestamp), 'unixepoch'));
         """):
         response += f'{row[1]}: {round(row[0], 2)}°C\n'
+    if not response:
+        response = 'No actual data, data oleder than 1 day in database'
     bot.reply_to(message, response)
     
 bot.infinity_polling()
